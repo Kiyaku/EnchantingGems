@@ -1,6 +1,8 @@
 package com.seriouscreeper.enchantinggems.events;
 
 import com.seriouscreeper.enchantinggems.EnchantingGems;
+import com.seriouscreeper.enchantinggems.init.ModItems;
+import com.seriouscreeper.enchantinggems.items.ItemGem;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -44,26 +46,14 @@ public class ToolAcquiredEvents {
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void makeTooltip(ItemTooltipEvent event) {
-        if(event.getItemStack() != ItemStack.EMPTY) {
+        if(event.getItemStack().getItem() == ModItems.itemGem) {
+            ItemStack stack = event.getItemStack();
             List<String> tooltips = event.getToolTip();
-            NBTTagCompound tag = event.getItemStack().getSubCompound(EnchantingGems.CompoundKey);
 
-            if(tag != null && tag.hasKey("slots")) {
-                NBTTagList slotTag = tag.getTagList("slots", 10);
-
-                for(int i = 0; i < slotTag.tagCount(); i++) {
-                    NBTTagCompound temp = slotTag.getCompoundTagAt(i);
-
-                    String slotInfo = i + ": " + temp.getString(EnchantingGems.GemTypeKey);
-
-                    if(temp.hasKey(EnchantingGems.SlottedGemKey)) {
-                        slotInfo += " | GEM";
-                    } else {
-                        slotInfo += " | -";
-                    }
-
-                    tooltips.add(slotInfo);
-                }
+            if(ItemGem.GetCurrentLevel(stack) != 0) {
+                tooltips.add("Level: " + ItemGem.GetCurrentLevel(stack) + " / " + ItemGem.GetEnchantment(stack).getMaxLevel());
+                tooltips.add("Charge: " + ItemGem.GetCurrentEXP(stack) + " / " + ItemGem.GetMaxEXP(stack));
+                tooltips.add("Enchantment: " + ItemGem.GetEnchantment(stack).getName());
             }
         }
     }

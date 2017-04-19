@@ -3,15 +3,20 @@ package com.seriouscreeper.enchantinggems.items;
 import com.seriouscreeper.enchantinggems.EnchantingGems;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentMending;
+import net.minecraft.enchantment.EnchantmentData;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Enchantments;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemTool;
 import net.minecraft.util.*;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.List;
+import java.util.Random;
 
 
 public class ItemGem extends Item {
@@ -48,10 +53,7 @@ public class ItemGem extends Item {
 
     public Quality GemQuality = Quality.DULL;
     public Color GemColor = Color.WHITE;
-    private int currentEXP = 0;
-    private int maxEXP = 100;
-    private int currentLevel = 1;
-    private Enchantment assignedEnchantment;
+    private Random rand = new Random();
 
 
     public ItemGem(String unlocalizedName) {
@@ -63,36 +65,63 @@ public class ItemGem extends Item {
     }
 
 
-    public int GetCurrentEXP() {
-        return currentEXP;
+    public static int GetCurrentEXP(ItemStack stack) {
+        return stack.getOrCreateSubCompound("Data").getInteger("currentEXP");
     }
 
 
-    public int GetMaxEXP() {
-        return currentLevel * 100;
+    public static int GetMaxEXP(ItemStack stack) {
+        return GetCurrentLevel(stack) * 100;
     }
 
 
-    public int GetCurrentLevel() {
-        return currentLevel;
+    public static int GetCurrentLevel(ItemStack stack) {
+        return stack.getOrCreateSubCompound("Data").getInteger("currentLevel");
     }
 
 
-    public void AddEXP(int exp) {
+    public static void SetLevel(ItemStack stack, int newLevel) {
+        stack.getOrCreateSubCompound("Data").setInteger("currentLevel", newLevel);
+    }
+
+
+    public static Enchantment GetEnchantment(ItemStack stack) {
+        return Enchantment.getEnchantmentByLocation(stack.getOrCreateSubCompound("Data").getString("assignedEnchantment"));
+    }
+
+
+    public static void SetEnchantment(ItemStack stack, Enchantment enchantment) {
+        stack.getOrCreateSubCompound("Data").setString("assignedEnchantment", enchantment.getRegistryName().toString());
+    }
+
+
+    public boolean CanLevelUp(ItemStack stack) {
+        return GetCurrentEXP(stack) >= GetMaxEXP(stack);
+    }
+
+
+    public static void AddEXP(ItemStack stack, int exp) {
+        int currentEXP = GetCurrentEXP(stack);
         currentEXP += exp;
 
-        if(currentEXP > maxEXP) {
-            currentEXP = maxEXP;
+        if(currentEXP > GetMaxEXP(stack)) {
+            currentEXP = GetMaxEXP(stack);
         }
 
-        System.out.println(currentEXP);
+        SetEXP(stack, currentEXP);
+    }
+
+
+    private static void SetEXP(ItemStack stack, int newValue) {
+        stack.getOrCreateSubCompound("Data").setInteger("currentEXP", newValue);
     }
 
 
     @Override
     public boolean hasEffect(ItemStack stack) {
-        return currentLevel > 0 && currentEXP == maxEXP;
+        return GetCurrentLevel(stack) > 0 && GetCurrentEXP(stack) == GetMaxEXP(stack);
     }
+
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
@@ -101,23 +130,33 @@ public class ItemGem extends Item {
 
 
     @Override
+    @SideOnly(Side.CLIENT)
     public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems) {
         for(int i = 1; i < EnchantingGems.GemSizes.values().length; i++) {
             subItems.add(new ItemStack(itemIn, 1, i - 1));
         }
     }
 
+
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
         if(!worldIn.isRemote && handIn != EnumHand.OFF_HAND) {
+            ItemStack stack = playerIn.getHeldItemMainhand();
             ItemStack offhandStack = playerIn.getHeldItemOffhand();
 
-            if (offhandStack != ItemStack.EMPTY) {
-                Item offhandItem = offhandStack.getItem();
+            if(offhandStack.getItem() instanceof ItemTool && CanLevelUp(stack)) {
+                offhandStack.addEnchantment(GetEnchantment(stack), GetCurrentLevel(stack));
+                playerIn.inventory.decrStackSize(playerIn.inventory.currentItem, 1);
+            } else {
+                if (GetCurrentLevel(stack) == 0) {
+                    List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, new ItemStack(Items.BOOK), 50, true);
+                    Enchantment enchantment = enchantments.get(rand.nextInt(enchantments.size())).enchantmentobj;
 
-                if (offhandItem instanceof ItemTool) {
-                    offhandStack.addEnchantment(Enchantments.MENDING, 1);
-                    playerIn.inventory.decrStackSize(playerIn.inventory.currentItem, 1);
+                    SetEnchantment(stack, enchantment);
+                    SetLevel(stack, GetCurrentLevel(stack) + 1);
+                } else if (GetEnchantment(stack) != null && CanLevelUp(stack) && GetCurrentLevel(stack) < GetEnchantment(stack).getMaxLevel()) {
+                    SetLevel(stack, GetCurrentLevel(stack) + 1);
+                    SetEXP(stack, 0);
                 }
             }
         }

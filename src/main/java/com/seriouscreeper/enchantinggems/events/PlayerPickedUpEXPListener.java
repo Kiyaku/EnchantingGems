@@ -11,11 +11,10 @@ public class PlayerPickedUpEXPListener {
     @SubscribeEvent
     public void playerPickedUpEXP(PlayerPickupXpEvent event) {
         if(event.getEntityPlayer().inventory.hasItemStack(new ItemStack(ModItems.itemGem))) {
-            ItemStack gemStack = event.getEntityPlayer().inventory.getStackInSlot(event.getEntityPlayer().inventory.getSlotFor(new ItemStack(ModItems.itemGem)));
-            ItemGem gem = ((ItemGem)gemStack.getItem());
+            ItemStack stack = event.getEntityPlayer().getHeldItemOffhand();
 
-            if(gem.GetCurrentLevel() > 0 && gem.GetCurrentEXP() < gem.GetMaxEXP()) {
-                gem.AddEXP(event.getOrb().getXpValue());
+            if(stack != ItemStack.EMPTY && stack.getItem() instanceof ItemGem && ItemGem.GetCurrentLevel(stack) > 0 && ItemGem.GetCurrentEXP(stack) < ItemGem.GetMaxEXP(stack)) {
+                ItemGem.AddEXP(stack, event.getOrb().getXpValue());
                 event.getEntityPlayer().xpCooldown = 2;
                 event.getEntityPlayer().onItemPickup(event.getOrb(), 1);
                 event.getOrb().setDead();
