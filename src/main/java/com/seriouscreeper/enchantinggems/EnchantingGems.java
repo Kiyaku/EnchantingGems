@@ -1,9 +1,11 @@
 package com.seriouscreeper.enchantinggems;
 
+import com.seriouscreeper.enchantinggems.events.ItemTooltipListener;
 import com.seriouscreeper.enchantinggems.events.PlayerPickedUpEXPListener;
 import com.seriouscreeper.enchantinggems.events.ToolAcquiredEvents;
 import com.seriouscreeper.enchantinggems.proxy.CommonProxy;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -46,6 +48,9 @@ public class EnchantingGems {
 
         PlayerPickedUpEXPListener playerPickedUpEXPListener = new PlayerPickedUpEXPListener();
         MinecraftForge.EVENT_BUS.register(playerPickedUpEXPListener);
+
+        ItemTooltipListener itemTooltipListener = new ItemTooltipListener();
+        MinecraftForge.EVENT_BUS.register(itemTooltipListener);
     }
 
 

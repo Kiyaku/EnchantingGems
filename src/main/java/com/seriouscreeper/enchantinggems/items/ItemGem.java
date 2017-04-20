@@ -1,20 +1,22 @@
 package com.seriouscreeper.enchantinggems.items;
 
 import com.seriouscreeper.enchantinggems.EnchantingGems;
+import com.seriouscreeper.enchantinggems.helper.SocketsNBTHelper;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.*;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.*;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -25,7 +27,8 @@ public class ItemGem extends Item {
         REGULAR,
         SHARPENED,
         FLAWLESS,
-        PERFECT
+        PERFECT,
+        LEGENDARY
     }
 
     private enum Color {
@@ -51,8 +54,7 @@ public class ItemGem extends Item {
         }
     }
 
-    public Quality GemQuality = Quality.DULL;
-    public Color GemColor = Color.WHITE;
+
     private Random rand = new Random();
 
 
@@ -61,7 +63,18 @@ public class ItemGem extends Item {
         this.setHasSubtypes(true);
         this.setUnlocalizedName(unlocalizedName);
         this.setRegistryName(unlocalizedName);
+        this.setMaxStackSize(1);
         setCreativeTab(CreativeTabs.MISC);
+    }
+
+
+    private void AssignColor(ItemStack stack) {
+        stack.getOrCreateSubCompound("Data").setInteger("color", rand.nextInt(Color.values().length));
+    }
+
+
+    public static boolean IsValidItem(Item item) {
+        return (item instanceof ItemTool || item instanceof ItemSword || item instanceof ItemBow || item instanceof ItemArmor || item instanceof ItemShield);
     }
 
 
@@ -95,7 +108,7 @@ public class ItemGem extends Item {
     }
 
 
-    public boolean CanLevelUp(ItemStack stack) {
+    public static boolean CanLevelUp(ItemStack stack) {
         return GetCurrentEXP(stack) >= GetMaxEXP(stack);
     }
 
@@ -144,11 +157,18 @@ public class ItemGem extends Item {
             ItemStack stack = playerIn.getHeldItemMainhand();
             ItemStack offhandStack = playerIn.getHeldItemOffhand();
 
-            if(offhandStack.getItem() instanceof ItemTool && CanLevelUp(stack)) {
-                offhandStack.addEnchantment(GetEnchantment(stack), GetCurrentLevel(stack));
-                playerIn.inventory.decrStackSize(playerIn.inventory.currentItem, 1);
+            if(offhandStack.getItem() instanceof ItemTool && offhandStack.getSubCompound(SocketsNBTHelper.compoundKey) != null) {
+                if(CanLevelUp(stack)) {
+                    if (SocketsNBTHelper.SocketGem(offhandStack, stack)) {
+                    } else {
+                        playerIn.sendStatusMessage(new TextComponentTranslation("enchantinggems.gems.nosockets"), true);
+                    }
+                } else {
+                    playerIn.sendStatusMessage(new TextComponentTranslation("enchantinggems.gems.notcharged"), true);
+                }
             } else {
                 if (GetCurrentLevel(stack) == 0) {
+                    // TEMP, replace with an infusion later
                     List<EnchantmentData> enchantments = EnchantmentHelper.buildEnchantmentList(rand, new ItemStack(Items.BOOK), 50, true);
                     Enchantment enchantment = enchantments.get(rand.nextInt(enchantments.size())).enchantmentobj;
 

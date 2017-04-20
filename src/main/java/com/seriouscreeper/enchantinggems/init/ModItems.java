@@ -25,6 +25,6 @@ public class ModItems {
 
 
     private static void registerRender(Item item, int meta) {
-        ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(Reference.MOD_ID + ":enchanting_gem" + meta, "inventory"));
+        ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(Reference.MOD_ID + ":enchanting_gem_" + meta, "inventory"));
     }
 }
