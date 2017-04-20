@@ -3,6 +3,7 @@ package com.seriouscreeper.enchantinggems;
 import com.seriouscreeper.enchantinggems.events.ItemTooltipListener;
 import com.seriouscreeper.enchantinggems.events.PlayerPickedUpEXPListener;
 import com.seriouscreeper.enchantinggems.events.ToolAcquiredEvents;
+import com.seriouscreeper.enchantinggems.init.ModFluids;
 import com.seriouscreeper.enchantinggems.proxy.CommonProxy;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;

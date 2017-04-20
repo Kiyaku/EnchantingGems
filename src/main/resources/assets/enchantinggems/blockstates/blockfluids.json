@@ -5,12 +5,11 @@
         "transform": "forge:default-item"
     },
     "variants": {
-        "fluid": [{
-            "model": "forge:fluid",
-            "custom": { "fluid": "liquidcrystalwhite" }
+        "fluidcrystalred": [{
+            "custom": { "fluid": "fluidcrystalred" }
         }],
-        "gas": [{
-            "custom": { "fluid": "testgas" }
+        "fluidcrystalgreen": [{
+            "custom": { "fluid": "fluidcrystalgreen" }
         }],
         "milk": [{
             "custom": { "fluid": "milk" }

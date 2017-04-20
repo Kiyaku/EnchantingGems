@@ -4,10 +4,10 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 
 
-public class FluidCrystalRed extends Fluid {
-    public static final String name = "fluidcrystalred";
+public class FluidCrystalGreen extends Fluid {
+    public static final String name = "fluidcrystalgreen";
 
-    public FluidCrystalRed() {
+    public FluidCrystalGreen() {
         super(name, new ResourceLocation("enchantinggems:blocks/water_still"), new ResourceLocation("enchantinggems:blocks/water_flow"));
 
     }
@@ -15,6 +15,6 @@ public class FluidCrystalRed extends Fluid {
     @Override
     public int getColor()
     {
-        return 0xFFFF0000;
+        return 0xFF00FF00;
     }
 }
